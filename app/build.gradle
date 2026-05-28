@@ -3,7 +3,6 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.stalker2game'
     compileSdk 34
-
     defaultConfig {
         applicationId "com.stalker2game"
         minSdk 21
@@ -11,23 +10,12 @@ android {
         versionCode 1
         versionName "1.0-EN"
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
-        debug {
-            applicationIdSuffix ".debug"
-        }
-    }
+    buildTypes { debug { } }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
 dependencies {
-    // J2ME Loader library - the actual J2ME runtime
-    implementation 'com.github.nikita36078:J2ME-Loader:master-SNAPSHOT'
     implementation 'androidx.appcompat:appcompat:1.6.1'
 }
