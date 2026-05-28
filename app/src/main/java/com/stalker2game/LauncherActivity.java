@@ -1,60 +1,33 @@
 package com.stalker2game;
-
-import android.app.Activity;
+import android.app.*;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.Environment;
+import android.os.*;
+import android.widget.Toast;
 import java.io.*;
 
-/**
- * Stalker 2 (English Translation) - Standalone Launcher
- * Extracts game.jar to device storage and launches it via J2ME Loader runtime.
- */
 public class LauncherActivity extends Activity {
-
-    private static final String GAME_JAR = "game.jar";
-    private static final String GAME_DIR = "Stalker2EN";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_launcher);
-        extractAndLaunch();
-    }
-
-    private void extractAndLaunch() {
+    protected void onCreate(Bundle b) {
+        super.onCreate(b);
         new Thread(() -> {
             try {
-                // Extract JAR from assets to app's private files directory
-                File gameDir = new File(getFilesDir(), GAME_DIR);
-                gameDir.mkdirs();
-                File jarFile = new File(gameDir, GAME_JAR);
-
-                // Copy only if not already extracted
-                if (!jarFile.exists()) {
-                    try (InputStream in = getAssets().open(GAME_JAR);
-                         FileOutputStream out = new FileOutputStream(jarFile)) {
-                        byte[] buf = new byte[8192];
-                        int len;
-                        while ((len = in.read(buf)) != -1) out.write(buf, 0, len);
-                    }
+                File dir = new File(getFilesDir(), "games");
+                dir.mkdirs();
+                File jar = new File(dir, "stalker2.jar");
+                if (!jar.exists()) {
+                    InputStream in = getAssets().open("game.jar");
+                    FileOutputStream out = new FileOutputStream(jar);
+                    byte[] buf = new byte[8192]; int n;
+                    while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
+                    in.close(); out.close();
                 }
-
-                // Launch via J2ME Loader's emulator activity
-                Intent intent = new Intent(this,
-                    ru.playsoftware.j2meloader.EmulatorActivity.class);
-                intent.putExtra("midletPath", jarFile.getAbsolutePath());
-                intent.putExtra("midletName", "Stalker 2 (EN)");
-                startActivity(intent);
-                finish();
-
-            } catch (Exception e) {
-                e.printStackTrace();
+                Intent i = getPackageManager()
+                    .getLaunchIntentForPackage("ru.playsoftware.j2meloader");
                 runOnUiThread(() -> {
-                    android.widget.Toast.makeText(this,
-                        "Error: " + e.getMessage(),
-                        android.widget.Toast.LENGTH_LONG).show();
+                    if (i != null) startActivity(i);
+                    else Toast.makeText(this,"Install J2ME Loader first",1).show();
                 });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, e.getMessage(), 1).show());
             }
         }).start();
     }
